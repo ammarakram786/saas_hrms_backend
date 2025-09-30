@@ -27,7 +27,7 @@ def list_permissions(request):
     List all available permissions grouped by module.
     """
     permissions = Permission.objects.all().order_by('module', 'code')
-    
+
     # Group permissions by module
     grouped_permissions = {}
     for permission in permissions:
@@ -38,5 +38,5 @@ def list_permissions(request):
             'code': permission.code,
             'description': permission.description,
         })
-    
+
     return Response(grouped_permissions)

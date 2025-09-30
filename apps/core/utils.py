@@ -1,12 +1,12 @@
 """
 Core utilities for the HRMS application.
 """
-import jwt
 import uuid
 from datetime import datetime, timedelta
-from django.conf import settings
-from django.core.exceptions import ValidationError
 from typing import Dict, Any, Optional
+
+import jwt
+from django.conf import settings
 
 
 def generate_jwt_token(payload: Dict[str, Any], expires_in: Optional[int] = None) -> str:

@@ -2,7 +2,7 @@
 Account serializers.
 """
 from rest_framework import serializers
-from django.contrib.auth import authenticate
+
 from django.contrib.auth.password_validation import validate_password
 from datetime import datetime, timedelta
 import uuid
@@ -11,148 +11,11 @@ from .models import User, Role, Permission, Invitation, UserRole
 from apps.core.utils import generate_invitation_token
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """
-    Serializer for User model.
-    """
-    full_name = serializers.ReadOnlyField()
-    effective_permissions = serializers.ReadOnlyField()
-    
-    class Meta:
-        model = User
-        fields = [
-            'id', 'email', 'first_name', 'last_name', 'full_name',
-            'is_active', 'last_login', 'profile', 'effective_permissions',
-            'created_at', 'updated_at'
-        ]
-        read_only_fields = [
-            'id', 'last_login', 'created_at', 'updated_at',
-            'full_name', 'effective_permissions'
-        ]
 
 
-class LoginSerializer(serializers.Serializer):
-    """
-    Serializer for user login.
-    """
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
-    
-    def validate(self, data):
-        """
-        Validate login credentials.
-        """
-        email = data.get('email')
-        password = data.get('password')
-        
-        if email and password:
-            user = authenticate(
-                request=self.context.get('request'),
-                username=email,
-                password=password
-            )
-            
-            if not user:
-                raise serializers.ValidationError('Invalid email or password.')
-            
-            if not user.is_active:
-                raise serializers.ValidationError('User account is disabled.')
-            
-            data['user'] = user
-        else:
-            raise serializers.ValidationError('Must include email and password.')
-        
-        return data
 
 
-class RegisterSerializer(serializers.ModelSerializer):
-    """
-    Serializer for user registration.
-    """
-    password = serializers.CharField(write_only=True, validators=[validate_password])
-    password_confirm = serializers.CharField(write_only=True)
-    
-    class Meta:
-        model = User
-        fields = [
-            'email', 'first_name', 'last_name', 'password', 'password_confirm'
-        ]
-    
-    def validate(self, data):
-        """
-        Validate registration data.
-        """
-        if data['password'] != data['password_confirm']:
-            raise serializers.ValidationError("Passwords don't match.")
-        return data
-    
-    def create(self, validated_data):
-        """
-        Create a new user.
-        """
-        validated_data.pop('password_confirm')
-        password = validated_data.pop('password')
-        
-        user = User.objects.create_user(
-            password=password,
-            **validated_data
-        )
-        return user
 
-
-class SuperUserCreateSerializer(serializers.Serializer):
-    """
-    Serializer for creating superuser (platform admin).
-    """
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True, validators=[validate_password])
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
-    
-    def validate_email(self, value):
-        """
-        Validate email uniqueness.
-        """
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("User with this email already exists.")
-        return value
-    
-    def create(self, validated_data):
-        """
-        Create superuser.
-        """
-        return User.objects.create_superuser(**validated_data)
-
-
-class PermissionSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Permission model.
-    """
-    class Meta:
-        model = Permission
-        fields = ['id', 'code', 'module', 'description']
-
-
-class RoleSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Role model.
-    """
-    permissions = PermissionSerializer(many=True, read_only=True)
-    permission_codes = serializers.ReadOnlyField()
-    user_count = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = Role
-        fields = [
-            'id', 'name', 'description', 'is_system', 'is_active',
-            'permissions', 'permission_codes', 'user_count',
-            'created_at', 'updated_at'
-        ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'is_system']
-    
-    def get_user_count(self, obj):
-        """Get number of users with this role."""
-        return obj.user_roles.count()
 
 
 class RoleCreateSerializer(serializers.ModelSerializer):
