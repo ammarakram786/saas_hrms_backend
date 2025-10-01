@@ -24,3 +24,14 @@ class RoleSerializer(serializers.ModelSerializer):
     def get_user_count(self, obj):
         """Get number of users with this role."""
         return obj.user_roles.count()
+
+
+class RoleCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating Role model.
+    """
+    class Meta:
+        model = Role
+        fields = [
+            'name', 'description', 'is_active', 'permissions'
+        ]

@@ -2,15 +2,15 @@ from django.db import models
 from django.utils import timezone
 
 from .role import Role
-from apps.core.models import TenantAwareModel
+from apps.core.models import BaseModel
 from django.contrib.postgres.fields import ArrayField
 from .user import User
 from .user_role import UserRole
 
 
-class Invitation(TenantAwareModel):
+class Invitation(BaseModel):
     """
-    User invitation model for inviting users to join a tenant.
+    User invitation model for inviting users to join the organization.
     """
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -42,14 +42,14 @@ class Invitation(TenantAwareModel):
         db_table = 'invitations'
         ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['tenant_id', 'email']),
+            models.Index(fields=['email']),
             models.Index(fields=['token']),
             models.Index(fields=['status']),
             models.Index(fields=['expires_at']),
         ]
 
     def __str__(self):
-        return f"Invitation for {self.email} to {self.tenant_id}"
+        return f"Invitation for {self.email}"
 
     @property
     def is_expired(self):
@@ -82,7 +82,7 @@ class Invitation(TenantAwareModel):
         self.save()
 
         # Assign roles to user
-        roles = Role.objects.filter(id__in=self.role_ids, tenant_id=self.tenant_id)
+        roles = Role.objects.filter(id__in=self.role_ids)
         for role in roles:
             UserRole.objects.get_or_create(
                 user=user,

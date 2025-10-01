@@ -27,7 +27,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """
-        Create a new user.
+        Create a new user (regular user only, not superuser).
         """
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
@@ -36,5 +36,11 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=password,
             **validated_data
         )
+        
+        # Ensure user is not superuser
+        user.is_superuser = False
+        user.is_staff = False
+        user.save()
+        
         return user
 

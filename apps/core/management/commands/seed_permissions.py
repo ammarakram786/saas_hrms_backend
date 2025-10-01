@@ -48,8 +48,8 @@ class Command(BaseCommand):
             ('profile.update_self', 'profile', 'Update own profile'),
             ('profile.view_self', 'profile', 'View own profile'),
             
-            # Admin/Tenant Management
-            ('tenant.settings.update', 'tenant', 'Update tenant settings'),
+            # Admin/System Management
+            ('system.settings.update', 'system', 'Update system settings'),
             ('role.manage', 'role', 'Manage roles'),
             ('role.view', 'role', 'View roles'),
             ('user.invite', 'user', 'Invite users'),

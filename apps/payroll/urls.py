@@ -3,12 +3,13 @@ Payroll URLs.
 """
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import views
+
+from .views import PayrollPeriodViewSet, PayrollRecordViewSet, PayrollComponentViewSet
 
 router = DefaultRouter()
-router.register('periods', views.PayrollPeriodViewSet, basename='payroll-periods')
-router.register('records', views.PayrollRecordViewSet, basename='payroll-records')
-router.register('components', views.PayrollComponentViewSet, basename='payroll-components')
+router.register(r'periods', PayrollPeriodViewSet)
+router.register(r'records', PayrollRecordViewSet)
+router.register(r'components', PayrollComponentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

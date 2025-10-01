@@ -47,9 +47,8 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     """
-    Custom User model with multi-tenant support.
+    Custom User model.
     """
-    tenant_id = models.UUIDField(null=True, blank=True, db_index=True)
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -72,7 +71,6 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         ordering = ['email']
         indexes = [
             models.Index(fields=['email']),
-            models.Index(fields=['tenant_id']),
             models.Index(fields=['is_active']),
         ]
 
@@ -108,6 +106,18 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
             return True
 
         return permission_code in self.effective_permissions
+    
+    def has_superuser_role(self):
+        """
+        Check if user has the superuser role.
+        """
+        return self.roles.filter(name='Superuser').exists()
+    
+    def is_effective_superuser(self):
+        """
+        Check if user is effectively a superuser (either Django superuser or has superuser role).
+        """
+        return self.is_superuser or self.has_superuser_role()
 
     def has_perms(self, permission_codes, obj=None):
         """
@@ -129,11 +139,9 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         effective_perms = self.effective_permissions
         return any(perm.startswith(f"{module_label}.") for perm in effective_perms)
 
-    def get_tenant_roles(self):
-        """Get user's roles within their tenant."""
-        if not self.tenant_id:
-            return Role.objects.none()
-        return self.roles.filter(tenant_id=self.tenant_id)
+    def get_roles(self):
+        """Get user's roles."""
+        return self.roles.filter(is_active=True)
 
 
 

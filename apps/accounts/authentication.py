@@ -110,14 +110,13 @@ def generate_tokens_for_user(user):
     payload = {
         'user_id': str(user.id),
         'email': user.email,
-        'tenant_id': str(user.tenant_id) if user.tenant_id else None,
         'is_superuser': user.is_superuser,
     }
     
-    # Add tenant-specific data for non-superusers
-    if not user.is_superuser and user.tenant_id:
+    # Add role and permission data for non-superusers
+    if not user.is_superuser:
         payload.update({
-            'role_ids': [str(role.id) for role in user.get_tenant_roles()],
+            'role_ids': [str(role.id) for role in user.get_roles()],
             'permissions': user.effective_permissions,
         })
     

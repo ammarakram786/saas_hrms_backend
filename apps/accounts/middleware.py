@@ -9,12 +9,43 @@ from django.urls import resolve
 logger = logging.getLogger(__name__)
 
 
+class SecurityHeadersMiddleware(MiddlewareMixin):
+    """
+    Middleware to add security headers to responses.
+    """
+
+    def process_response(self, request, response):
+        """
+        Add security headers to the response.
+        """
+        # Add security headers
+        response['X-Content-Type-Options'] = 'nosniff'
+        response['X-Frame-Options'] = 'DENY'
+        response['X-XSS-Protection'] = '1; mode=block'
+        response['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+
+        # Only add CSP for non-API responses
+        if not request.path.startswith('/api/'):
+            response['Content-Security-Policy'] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline'; "
+                "style-src 'self' 'unsafe-inline'; "
+                "img-src 'self' data: https:; "
+                "font-src 'self' https://fonts.gstatic.com; "
+                "connect-src 'self'"
+            )
+
+        return response
+
+
 class PermissionMiddleware(MiddlewareMixin):
     """
     Middleware to check route-level permissions.
     
-    This middleware works in conjunction with the TenantMiddleware to ensure
-    users have the required permissions to access specific API endpoints.
+    This middleware ensures users have the required permissions to access 
+    specific API endpoints.
     """
     
     # URL patterns that require specific permissions
@@ -61,8 +92,8 @@ class PermissionMiddleware(MiddlewareMixin):
         'accounts:user-invite': 'user.invite',
         'accounts:user-assign-roles': 'user.assign_roles',
         
-        # Tenant settings
-        'tenants:tenant-settings': 'tenant.settings.update',
+        # System settings
+        'core:system-settings': 'system.settings.update',
     }
     
     # Routes that are exempt from permission checking
@@ -74,7 +105,7 @@ class PermissionMiddleware(MiddlewareMixin):
         'accounts:accept-invitation',
         'core:health-check',
         'core:list-permissions',
-        'tenants:current-tenant',
+        'core:system-info',
     ]
     
     def process_view(self, request, view_func, view_args, view_kwargs):

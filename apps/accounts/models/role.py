@@ -1,10 +1,10 @@
 from django.db import models
 
 from .permission import Permission
-from apps.core.models import TenantAwareModel
+from apps.core.models import BaseModel
 
 
-class Role(TenantAwareModel):
+class Role(BaseModel):
     """
     Represents a role that can be assigned to users.
     """
@@ -18,15 +18,15 @@ class Role(TenantAwareModel):
     class Meta:
         db_table = 'roles'
         ordering = ['name']
-        unique_together = [('tenant_id', 'name')]
+        unique_together = [('name',)]
         indexes = [
-            models.Index(fields=['tenant_id', 'name']),
+            models.Index(fields=['name']),
             models.Index(fields=['is_system']),
             models.Index(fields=['is_active']),
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.tenant_id})"
+        return self.name
 
     @property
     def permission_codes(self):
