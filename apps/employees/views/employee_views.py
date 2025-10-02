@@ -18,8 +18,15 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     ViewSet for managing employees.
     """
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_class = EmployeeFilter
+    def get_filter_backends(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return []
+        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    def get_filterset_class(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return None
+        return EmployeeFilter
     search_fields = ['first_name', 'last_name', 'employee_id', 'email', 'position']
     ordering_fields = ['last_name', 'hire_date', 'department', 'position']
     ordering = ['last_name', 'first_name']

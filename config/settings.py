@@ -22,6 +22,8 @@ DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
 
@@ -48,17 +50,35 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.accounts.middleware.SecurityHeadersMiddleware',
     'apps.core.middleware.APILoggingMiddleware',
     'apps.core.middleware.PerformanceMonitoringMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'apps.accounts.middleware.PermissionMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
 
-# Templates removed - REST API only
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
@@ -69,10 +89,11 @@ DATABASES = {
         'NAME': 'hrms',
         'USER': 'postgres',
         'PASSWORD': 'postgres_ag_branch',
-        'HOST': 'localhost',
+        'HOST': '192.168.18.17',
         'PORT': '5433',
     }
 }
+
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
@@ -124,6 +145,9 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        'login': '5/minute',  # Adjust the rate as needed
+    },
 }
 
 # CORS Configuration
@@ -198,11 +222,7 @@ CELERY_TIMEZONE = TIME_ZONE
 # Caching Configuration
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': config('REDIS_URL', default='redis://localhost:6379/1'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
 

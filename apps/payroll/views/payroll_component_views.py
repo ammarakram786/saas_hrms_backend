@@ -14,7 +14,10 @@ class PayrollComponentViewSet(viewsets.ModelViewSet):
     ViewSet for managing payroll components.
     """
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    def get_filter_backends(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return []
+        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'code']
     ordering_fields = ['name', 'code', 'component_type']
     ordering = ['name']

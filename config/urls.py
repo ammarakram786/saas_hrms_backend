@@ -7,7 +7,29 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
+from drf_yasg.generators import OpenAPISchemaGenerator
 from drf_yasg import openapi
+
+
+class CustomOpenAPISchemaGenerator(OpenAPISchemaGenerator):
+    def get_operation(self, view, path, prefix, method, components, request):
+        """Override to handle duplicate parameters"""
+        try:
+            return super().get_operation(view, path, prefix, method, components, request)
+        except AssertionError as e:
+            if "duplicate Parameters found" in str(e):
+                # Handle duplicate parameters by creating a simple operation
+                from drf_yasg.openapi import Operation, Response
+                responses = {
+                    '200': Response(description='Success')
+                }
+                operation = Operation(
+                    operation_id=f"{view.__class__.__name__}_{method.lower()}",
+                    summary=f"{view.__class__.__name__} {method.upper()}",
+                    responses=responses
+                )
+                return operation
+            raise
 
 # API Documentation Schema View
 schema_view = get_schema_view(
@@ -21,6 +43,8 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=[permissions.AllowAny],
+    generator_class=CustomOpenAPISchemaGenerator,
+    url='http://localhost:8000',  # Replace with your actual API base URL
 )
 
 urlpatterns = [

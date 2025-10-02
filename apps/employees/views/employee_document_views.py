@@ -16,6 +16,11 @@ class EmployeeDocumentViewSet(viewsets.ModelViewSet):
     """
     permission_classes = [IsAuthenticated]
     
+    def get_filter_backends(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return []
+        return []
+
     def get_queryset(self):
         """
         Get employee documents.

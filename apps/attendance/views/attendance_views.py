@@ -9,9 +9,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from datetime import datetime, date
 
-from ..models import AttendanceRecord, Employee
-from ..serializers import AttendanceSerializer, ClockInSerializer, ClockOutSerializer
-from ..filters import AttendanceFilter
+from apps.attendance.models import AttendanceRecord
+from apps.employees.models import Employee
+from apps.attendance.serializers import AttendanceSerializer, ClockOutSerializer, ClockInSerializer
+
+from apps.attendance.filters import AttendanceFilter
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -19,8 +21,15 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     ViewSet for managing attendance records.
     """
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_class = AttendanceFilter
+    def get_filter_backends(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return []
+        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    def get_filterset_class(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return None
+        return AttendanceFilter
     search_fields = ['employee__first_name', 'employee__last_name', 'employee__employee_id']
     ordering_fields = ['date', 'check_in', 'hours_worked']
     ordering = ['-date']

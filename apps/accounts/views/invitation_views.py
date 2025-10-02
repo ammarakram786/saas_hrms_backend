@@ -20,8 +20,16 @@ class InvitationViewSet(viewsets.ModelViewSet):
     ViewSet for managing invitations.
     """
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_class = InvitationFilter
+    def get_filter_backends(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return []
+        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    def get_filterset_class(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return None
+        return InvitationFilter
+
     search_fields = ['email']
     ordering_fields = ['email', 'created_at', 'expires_at']
     ordering = ['-created_at']
@@ -30,7 +38,11 @@ class InvitationViewSet(viewsets.ModelViewSet):
         """
         Get invitations.
         """
-        if self.request.user.is_effective_superuser():
+        # Handle schema generation
+        if getattr(self, 'swagger_fake_view', False):
+            return Invitation.objects.none()
+
+        if hasattr(self.request.user, 'is_effective_superuser') and self.request.user.is_effective_superuser():
             return Invitation.objects.all().select_related('invited_by')
         else:
             # Regular users can only see invitations sent to their email

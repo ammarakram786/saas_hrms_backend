@@ -7,9 +7,9 @@ from rest_framework.routers import DefaultRouter
 from .views import PayrollPeriodViewSet, PayrollRecordViewSet, PayrollComponentViewSet
 
 router = DefaultRouter()
-router.register(r'periods', PayrollPeriodViewSet)
-router.register(r'records', PayrollRecordViewSet)
-router.register(r'components', PayrollComponentViewSet)
+router.register(r'periods', PayrollPeriodViewSet, basename='payroll-period')
+router.register(r'records', PayrollRecordViewSet, basename='payroll-record')
+router.register(r'components', PayrollComponentViewSet, basename='payroll-component')
 
 urlpatterns = [
     path('', include(router.urls)),
