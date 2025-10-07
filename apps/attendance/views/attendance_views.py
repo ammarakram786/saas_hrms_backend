@@ -21,15 +21,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     ViewSet for managing attendance records.
     """
     permission_classes = [IsAuthenticated]
-    def get_filter_backends(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return []
-        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-
-    def get_filterset_class(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return None
-        return AttendanceFilter
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = AttendanceFilter
     search_fields = ['employee__first_name', 'employee__last_name', 'employee__employee_id']
     ordering_fields = ['date', 'check_in', 'hours_worked']
     ordering = ['-date']

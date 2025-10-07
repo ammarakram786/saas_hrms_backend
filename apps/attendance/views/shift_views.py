@@ -15,10 +15,7 @@ class ShiftViewSet(viewsets.ModelViewSet):
     ViewSet for managing shifts.
     """
     permission_classes = [IsAuthenticated]
-    def get_filter_backends(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return []
-        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ShiftFilter
     search_fields = ['name']
     ordering_fields = ['name', 'start_time', 'duration_hours']

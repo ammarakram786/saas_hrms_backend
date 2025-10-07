@@ -15,10 +15,7 @@ class HolidayViewSet(viewsets.ModelViewSet):
     ViewSet for managing holidays.
     """
     permission_classes = [IsAuthenticated]
-    def get_filter_backends(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return []
-        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = HolidayFilter
     search_fields = ['name', 'description']
     ordering_fields = ['date', 'name']

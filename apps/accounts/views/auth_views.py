@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import login, logout
 
-from ..serializers import LoginSerializer, RegisterSerializer
+from ..serializers import LoginSerializer, RegisterSerializer, UserSerializer
 from ..authentication import generate_tokens_for_user, refresh_access_token
 from ...core.utils import (
     api_view_error_handler, APIError, ValidationError,
@@ -74,8 +74,11 @@ def login_view(request):
         user.last_login = timezone.now()
         user.save(update_fields=['last_login'])
 
+        # Serialize user data for response
+        user_serializer = UserSerializer(user)
+        
         response_data = {
-            'user': serializer.validated_data['user_data'],
+            'user': user_serializer.data,
             **tokens
         }
 
@@ -101,6 +104,40 @@ def login_view(request):
         logger = logging.getLogger(__name__)
         logger.error(f"Unexpected error in login_view: {str(exc)}", exc_info=True)
         raise APIError('Login failed due to an internal error', status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_view(request):
+    """
+    User logout endpoint.
+    """
+    logout(request)
+    return Response({'message': 'Logged out successfully'})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def refresh_token_view(request):
+    """
+    Refresh access token endpoint.
+    """
+    refresh_token = request.data.get('refresh_token')
+
+    if not refresh_token:
+        return Response(
+            {'error': 'Refresh token is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        tokens = refresh_access_token(refresh_token)
+        return Response(tokens)
+    except Exception as e:
+        return Response(
+            {'error': 'Invalid refresh token'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
 
 
 @api_view(['POST'])
@@ -172,35 +209,3 @@ def register_view(request):
         raise APIError('Registration failed due to an internal error', status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def logout_view(request):
-    """
-    User logout endpoint.
-    """
-    logout(request)
-    return Response({'message': 'Logged out successfully'})
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def refresh_token_view(request):
-    """
-    Refresh access token endpoint.
-    """
-    refresh_token = request.data.get('refresh_token')
-    
-    if not refresh_token:
-        return Response(
-            {'error': 'Refresh token is required'}, 
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    
-    try:
-        tokens = refresh_access_token(refresh_token)
-        return Response(tokens)
-    except Exception as e:
-        return Response(
-            {'error': 'Invalid refresh token'}, 
-            status=status.HTTP_401_UNAUTHORIZED
-        )

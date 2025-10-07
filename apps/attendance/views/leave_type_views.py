@@ -14,10 +14,7 @@ class LeaveTypeViewSet(viewsets.ModelViewSet):
     ViewSet for managing leave types.
     """
     permission_classes = [IsAuthenticated]
-    def get_filter_backends(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return []
-        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'code', 'description']
     ordering_fields = ['name', 'code', 'days_allowed_per_year']
     ordering = ['name']

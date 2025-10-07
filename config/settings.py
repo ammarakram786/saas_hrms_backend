@@ -32,7 +32,6 @@ THIRD_PARTY_APPS = [
     'corsheaders',
     'django_extensions',
     'django_filters',
-    'drf_yasg',
 ]
 
 LOCAL_APPS = [
@@ -83,14 +82,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'hrms',
+#         'USER': 'postgres',
+#         'PASSWORD': 'postgres_ag_branch',
+#         'HOST': '192.168.18.17',
+#         'PORT': '5433',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'hrms',
         'USER': 'postgres',
-        'PASSWORD': 'postgres_ag_branch',
-        'HOST': '192.168.18.17',
-        'PORT': '5433',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -180,30 +190,6 @@ SESSION_COOKIE_SAMESITE = 'Strict'
 # Rate Limiting - Custom throttle classes will be added to views as needed
 # Default throttling for sensitive endpoints
 
-# API Documentation (Swagger/OpenAPI)
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header',
-            'description': 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"'
-        }
-    },
-    'USE_SESSION_AUTH': False,
-    'JSON_EDITOR': True,
-    'SUPPORTED_SUBMIT_METHODS': [
-        'get',
-        'post',
-        'put',
-        'delete',
-        'patch'
-    ],
-    'OPERATIONS_SORTER': 'alpha',
-    'TAGS_SORTER': 'alpha',
-    'DOC_EXPANSION': 'none',
-    'DEEP_LINKING': True,
-}
 
 # JWT Configuration
 JWT_SECRET_KEY = config('JWT_SECRET_KEY', default=SECRET_KEY)

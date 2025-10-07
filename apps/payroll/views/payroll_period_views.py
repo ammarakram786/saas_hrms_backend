@@ -14,10 +14,7 @@ class PayrollPeriodViewSet(viewsets.ModelViewSet):
     ViewSet for managing payroll periods.
     """
     permission_classes = [IsAuthenticated]
-    def get_filter_backends(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return []
-        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name']
     ordering_fields = ['period_start', 'period_end', 'pay_date']
     ordering = ['-period_start']

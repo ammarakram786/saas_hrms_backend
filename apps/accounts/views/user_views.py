@@ -18,15 +18,8 @@ class UserViewSet(viewsets.ModelViewSet):
     ViewSet for managing users.
     """
     permission_classes = [IsAuthenticated]
-    def get_filter_backends(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return []
-        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-
-    def get_filterset_class(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return None
-        return UserFilter
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = UserFilter
 
     search_fields = ['first_name', 'last_name', 'email']
     ordering_fields = ['first_name', 'last_name', 'email', 'created_at']
@@ -39,9 +32,6 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Get users based on permissions.
         """
-        # Handle schema generation
-        if getattr(self, 'swagger_fake_view', False):
-            return User.objects.none()
 
         if hasattr(self.request.user, 'is_effective_superuser') and self.request.user.is_effective_superuser():
             return User.objects.all().select_related('profile')

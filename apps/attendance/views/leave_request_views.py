@@ -17,15 +17,8 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
     ViewSet for managing leave requests.
     """
     permission_classes = [IsAuthenticated]
-    def get_filter_backends(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return []
-        return [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-
-    def get_filterset_class(self):
-        if getattr(self, 'swagger_fake_view', False):
-            return None
-        return LeaveRequestFilter
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = LeaveRequestFilter
     search_fields = ['employee__first_name', 'employee__last_name', 'reason']
     ordering_fields = ['start_date', 'end_date', 'created_at']
     ordering = ['-created_at']
